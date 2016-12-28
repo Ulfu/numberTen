@@ -4,46 +4,109 @@
 
 // constants won't change. They're used here to
 // set pin numbers:
-int ledPins[8]; //= {4,5,6,7,8,9,10,11};      // the number of the LED pin
 const int potentiometerPin = 0;      // the number of the potentiometer pin
-const int motorPin = 3;
+const int leftButton = 11;
+const int rightButton = 10;
 
-int ledsState[8] = {0,0,0,0,0,0,0,0}; //Current LEDs that are HIGH
+//Define steering pins for left motor
+const int enablePinLeft = 3;
+const int lMotorOne = 4;
+const int lMotorTwo = 5;
+
+//Define steering pins for right motor
+const int enablePinRight = 6;
+const int rMotorOne = 7;
+const int rMotorTwo = 8;
+
 int potentiometerRead;
-int ledPointer = 0;
+int turnPercent = 0;
+boolean leftButtonVal = 1;
+boolean rightButtonVal = 1;
 
+int lastPressed = 0;
 
 void setup() {
-  for (int i = 0; i < 8; i++) {
-    //Assign number of pins
-    ledPins[i] = i + 4;
-    //Set all led states to LOW
-    ledsState[i] = false;
-    // initialize the LED pins as an outputs:
-    pinMode(ledPins[i], OUTPUT);
-  }
   // initialize the button pins as an input pullup:
   pinMode(potentiometerPin, INPUT);
-  pinMode(motorPin, OUTPUT);
+  
+  //setup left motor
+  pinMode(enablePinLeft, OUTPUT);
+  pinMode(rMotorOne, OUTPUT);
+  pinMode(rMotorTwo, OUTPUT);
+  //setup right motor
+  pinMode(enablePinRight, OUTPUT);
+  pinMode(lMotorOne, OUTPUT);
+  pinMode(lMotorTwo, OUTPUT);
+  
+  pinMode(leftButton, INPUT_PULLUP);
+  pinMode(rightButton, INPUT_PULLUP);
   Serial.begin(9600);
 }
 
 void loop() {
   potentiometerRead = analogRead(potentiometerPin);
-  ledPointer = map(potentiometerRead, 0, 1023, 0, 8);
   potentiometerRead = map(potentiometerRead, 0, 1023, 0, 255);
-  analogWrite(motorPin, potentiometerRead);
-  Serial.println(potentiometerRead);
-  
-  for (int i = 0;  i < 8; i++) {
+  //Serial.println(potentiometerRead);
 
-    Serial.println(ledsState[i]); //Prints led state
-    if (i < ledPointer) {
-      ledsState[i] = true;
-    }
-    else {
-      ledsState[i] = false;
-    }
-    digitalWrite(ledPins[i], ledsState[i]);
-  }
+  forward(true); 
+  gas();
+  steer();
 }
+
+void gas() {
+  //turnPercent
+  int Speed = potentiometerRead;
+  int rightSpeed;
+  int leftSpeed;
+  if (turnPercent <= 0) {
+    leftSpeed = Speed;
+    rightSpeed = Speed + (Speed * turnPercent / 100);
+  }
+  if (turnPercent > 0) {
+    rightSpeed = Speed;
+    leftSpeed = Speed - (Speed * turnPercent / 100);
+  }
+  //Serial.println(leftSpeed);
+  //Serial.println(rightSpeed);
+  analogWrite(enablePinLeft, leftSpeed);
+  analogWrite(enablePinRight, rightSpeed);
+}
+
+void steer() {
+  Serial.println(turnPercent);
+  leftButtonVal = digitalRead(leftButton);
+  rightButtonVal = digitalRead(rightButton);
+  if (millis() - lastPressed > 300 ) {
+    if (!leftButtonVal) {
+      turnPercent += 10;
+      lastPressed = millis();
+    }
+    if (!rightButtonVal) {
+      turnPercent -= 10;
+      lastPressed = millis();
+    }
+  }
+  turnPercent = constrain(turnPercent, -100, 100);
+}
+
+void forward(boolean yes) {
+  //Set the H-bridge in direction forward
+  digitalWrite(rMotorOne, !yes);
+  digitalWrite(rMotorTwo, yes);
+
+  digitalWrite(lMotorOne, yes);
+  digitalWrite(lMotorTwo, !yes);
+}
+
+void backwards() {
+  
+}
+
+void rotate(boolean right) {
+  digitalWrite(rMotorOne, right);
+  digitalWrite(rMotorTwo, !right);
+
+  digitalWrite(lMotorOne, right);
+  digitalWrite(lMotorTwo, !right);
+}
+
