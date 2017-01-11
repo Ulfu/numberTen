@@ -5,8 +5,7 @@
 // constants won't change. They're used here to
 // set pin numbers:
 const int potentiometerPin = 0;      // the number of the potentiometer pin
-const int leftButton = 11;
-const int rightButton = 10;
+const int steeringWheelPin = 1;
 
 //Define steering pins for left motor
 const int enablePinLeft = 3;
@@ -20,14 +19,11 @@ const int rMotorTwo = 8;
 
 int potentiometerRead;
 int turnPercent = 0;
-boolean leftButtonVal = 1;
-boolean rightButtonVal = 1;
 
-int lastPressed = 0;
+boolean goForward;
+
 
 void setup() {
-  // initialize the button pins as an input pullup:
-  pinMode(potentiometerPin, INPUT);
   
   //setup left motor
   pinMode(enablePinLeft, OUTPUT);
@@ -38,21 +34,29 @@ void setup() {
   pinMode(lMotorOne, OUTPUT);
   pinMode(lMotorTwo, OUTPUT);
   
-  pinMode(leftButton, INPUT_PULLUP);
-  pinMode(rightButton, INPUT_PULLUP);
   Serial.begin(9600);
 }
 
 void loop() {
   potentiometerRead = analogRead(potentiometerPin);
-  potentiometerRead = map(potentiometerRead, 0, 1023, 0, 255);
+  potentiometerRead = map(potentiometerRead, 0, 1023, -255, 255);
   //Serial.println(potentiometerRead);
-
-  forward(true); 
+  
+  Direction();
+  forward(goForward); 
   gas();
   steer();
 }
-
+void Direction() {
+    if (potentiometerRead < 0) {
+      potentiometerRead = -potentiometerRead;
+      goForward = false;
+    }
+    else {
+      goForward = true;
+    }
+  
+  }
 void gas() {
   //turnPercent
   int Speed = potentiometerRead;
@@ -74,19 +78,9 @@ void gas() {
 
 void steer() {
   Serial.println(turnPercent);
-  leftButtonVal = digitalRead(leftButton);
-  rightButtonVal = digitalRead(rightButton);
-  if (millis() - lastPressed > 300 ) {
-    if (!leftButtonVal) {
-      turnPercent += 10;
-      lastPressed = millis();
-    }
-    if (!rightButtonVal) {
-      turnPercent -= 10;
-      lastPressed = millis();
-    }
-  }
-  turnPercent = constrain(turnPercent, -100, 100);
+  
+  turnPercent = analogRead(steeringWheelPin);
+  turnPercent = map(turnPercent, 0, 1024, -100, 100);
 }
 
 void forward(boolean yes) {
@@ -98,9 +92,6 @@ void forward(boolean yes) {
   digitalWrite(lMotorTwo, !yes);
 }
 
-void backwards() {
-  
-}
 
 void rotate(boolean right) {
   digitalWrite(rMotorOne, right);
