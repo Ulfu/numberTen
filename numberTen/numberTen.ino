@@ -20,8 +20,8 @@ const int rMotorTwo = 8;
 int potentiometerRead;
 int turnPercent = 0;
 
-boolean goForward;
-
+boolean poLeft;
+boolean poRight;
 
 void setup() {
   
@@ -38,37 +38,53 @@ void setup() {
 }
 
 void loop() {
-  potentiometerRead = analogRead(potentiometerPin);
-  potentiometerRead = map(potentiometerRead, 0, 1023, -255, 255);
   //Serial.println(potentiometerRead);
   
   Direction();
-  forward(goForward); 
   gas();
+  forward(poLeft, poRight); 
   steer();
 }
 void Direction() {
-    if (potentiometerRead < 0) {
-      potentiometerRead = -potentiometerRead;
-      goForward = false;
-    }
-    else {
-      goForward = true;
-    }
+  potentiometerRead = analogRead(potentiometerPin);
+  potentiometerRead = map(potentiometerRead, 0, 1023, -255, 255);
   
+  if (potentiometerRead < 0) {
+    potentiometerRead = -potentiometerRead;
+    poRight = false;
+    }
+  else {
+    poRight = true;
+    }
+  poLeft = poRight;
+  
+  if (potentiometerRead > 255){
+    potentiometerRead -= 255;
+    poLeft = !poRight;
+    }
   }
 void gas() {
   //turnPercent
   int Speed = potentiometerRead;
   int rightSpeed;
   int leftSpeed;
+  turnPercent *= 2;
+  //abs(turnPercent) <= 100
+  if (abs(turnPercent) >= 100) {
+    if (turnPercent <= 0) {
+      turnPercent += 100;
+    }
+    else {
+      turnPercent -= 100;
+    }
+  }
   if (turnPercent <= 0) {
     leftSpeed = Speed;
-    rightSpeed = Speed + (Speed * turnPercent / 100);
+    rightSpeed = Speed (1 + turnPercent / 100);
   }
   if (turnPercent > 0) {
     rightSpeed = Speed;
-    leftSpeed = Speed - (Speed * turnPercent / 100);
+    leftSpeed = Speed (1 - turnPercent / 100);   
   }
   //Serial.println(leftSpeed);
   //Serial.println(rightSpeed);
@@ -81,21 +97,13 @@ void steer() {
   
   turnPercent = analogRead(steeringWheelPin);
   turnPercent = map(turnPercent, 0, 1024, -100, 100);
+  turnPercent *= 2;
 }
 
-void forward(boolean yes) {
+void forward(boolean left, boolean right) {
   //Set the H-bridge in direction forward
-  digitalWrite(rMotorOne, !yes);
-  digitalWrite(rMotorTwo, yes);
-
-  digitalWrite(lMotorOne, yes);
-  digitalWrite(lMotorTwo, !yes);
-}
-
-
-void rotate(boolean right) {
-  digitalWrite(rMotorOne, right);
-  digitalWrite(rMotorTwo, !right);
+  digitalWrite(rMotorOne, !left);
+  digitalWrite(rMotorTwo, left);
 
   digitalWrite(lMotorOne, right);
   digitalWrite(lMotorTwo, !right);
