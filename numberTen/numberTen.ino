@@ -75,11 +75,13 @@ void gas() {
   }
   else poRight = 1;
 
-  if (turnPercent <= 0) {
+  if (Speed < 0) {
     poLeft = !poLeft;
     poRight = !poRight;
     Speed = -Speed;
-    
+  }
+  
+  if (turnPercent <= 0) {
     leftSpeed = Speed;
     rightSpeed = Speed * abs(turnPercent + 50) / 100;
   }
@@ -87,8 +89,11 @@ void gas() {
     rightSpeed = Speed;
     leftSpeed = Speed * abs(turnPercent - 50) / 100;  
   }
-  //Serial.println(leftSpeed);
-  //Serial.println(rightSpeed);
+  
+  Serial.print(leftSpeed);
+  Serial.print("left Speed\t");
+  Serial.print(rightSpeed);
+  Serial.print("right Speed\t");
   analogWrite(enablePinLeft, leftSpeed);
   analogWrite(enablePinRight, rightSpeed);
 }
