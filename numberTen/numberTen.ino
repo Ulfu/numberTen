@@ -20,6 +20,7 @@ const int rMotorTwo = 8;
 int potentiometerRead;
 int turnPercent = 0;
 
+boolean poFor;
 boolean poLeft;
 boolean poRight;
 
@@ -44,47 +45,47 @@ void loop() {
   gas();
   forward(poLeft, poRight); 
   steer();
+  prints();
 }
+
 void Direction() {
   potentiometerRead = analogRead(potentiometerPin);
   potentiometerRead = map(potentiometerRead, 0, 1023, -255, 255);
   
+  /*
   if (potentiometerRead < 0) {
     potentiometerRead = -potentiometerRead;
-    poRight = false;
+    poFor = true;
     }
   else {
-    poRight = true;
-    }
-  poLeft = poRight;
-  
-  if (potentiometerRead > 255){
-    potentiometerRead -= 255;
-    poLeft = !poRight;
-    }
+    poFor = false;
+    }*/
   }
+  
 void gas() {
   //turnPercent
   int Speed = potentiometerRead;
   int rightSpeed;
   int leftSpeed;
-  turnPercent *= 2;
   //abs(turnPercent) <= 100
-  if (abs(turnPercent) >= 100) {
-    if (turnPercent <= 0) {
-      turnPercent += 100;
-    }
-    else {
-      turnPercent -= 100;
-    }
+  if (turnPercent < -50){ poLeft = 0;
   }
+  else poLeft = 1;
+  if (turnPercent > 50) { poRight = 0;
+  }
+  else poRight = 1;
+
   if (turnPercent <= 0) {
+    poLeft = !poLeft;
+    poRight = !poRight;
+    Speed = -Speed;
+    
     leftSpeed = Speed;
-    rightSpeed = Speed (1 + turnPercent / 100);
+    rightSpeed = Speed * abs(turnPercent + 50) / 100;
   }
   if (turnPercent > 0) {
     rightSpeed = Speed;
-    leftSpeed = Speed (1 - turnPercent / 100);   
+    leftSpeed = Speed * abs(turnPercent - 50) / 100;  
   }
   //Serial.println(leftSpeed);
   //Serial.println(rightSpeed);
@@ -93,11 +94,10 @@ void gas() {
 }
 
 void steer() {
-  Serial.println(turnPercent);
+  //Serial.println(turnPercent);
   
   turnPercent = analogRead(steeringWheelPin);
-  turnPercent = map(turnPercent, 0, 1024, -100, 100);
-  turnPercent *= 2;
+  turnPercent = map(turnPercent, 0, 1023, -100, 100);
 }
 
 void forward(boolean left, boolean right) {
@@ -105,7 +105,23 @@ void forward(boolean left, boolean right) {
   digitalWrite(rMotorOne, !left);
   digitalWrite(rMotorTwo, left);
 
-  digitalWrite(lMotorOne, right);
-  digitalWrite(lMotorTwo, !right);
+  digitalWrite(lMotorOne, !right);
+  digitalWrite(lMotorTwo, right);
+}
+
+void prints(){
+  Serial.print(potentiometerRead);
+  Serial.print("gas\t");
+  Serial.print(turnPercent);
+  Serial.print("ratt\t");
+  //Serial.print(potentiometerRead);
+  //Serial.print("vänster gas\t");
+  Serial.print(poLeft);
+  Serial.print("left polaritet \t");
+  //Serial.print(potentiometerRead);
+  //Serial.print("höger gas \t");
+  Serial.print(poRight);
+  Serial.println("right polaritet \t");
+  
 }
 
