@@ -6,6 +6,8 @@
 // set pin numbers:
 const int potentiometerPin = 0;      // the number of the potentiometer pin
 const int steeringWheelPin = 1;
+const int echoPin = 11;
+const int trigPin = 12;
 
 //Define steering pins for left motor
 const int enablePinLeft = 3;
@@ -25,7 +27,8 @@ boolean poLeft;
 boolean poRight;
 
 void setup() {
-  
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
   //setup left motor
   pinMode(enablePinLeft, OUTPUT);
   pinMode(rMotorOne, OUTPUT);
@@ -40,12 +43,16 @@ void setup() {
 
 void loop() {
   //Serial.println(potentiometerRead);
-  
   Direction();
-  gas();
-  forward(poLeft, poRight); 
-  steer();
-  prints();
+  if (ping() < 10 && potentiometerRead > 0) {
+    Stop();
+  }
+  else {
+    gas();
+    forward(poLeft, poRight); 
+    steer();
+    prints();
+  }
 }
 
 void Direction() {
@@ -128,5 +135,31 @@ void prints(){
   Serial.print(poRight);
   Serial.println("right polaritet \t");
   
+}
+
+long ping() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(5);
+  digitalWrite(trigPin, LOW);
+
+  long microSeconds = pulseIn(echoPin, HIGH);
+  
+  long cm = microSecondsTocm(microSeconds);
+  return cm;
+  }
+  
+long microSecondsTocm(long microseconds) {
+  return microseconds / 29 / 2;
+}
+
+void Stop() {
+  digitalWrite(rMotorOne, HIGH);
+  digitalWrite(rMotorTwo, HIGH);
+
+  digitalWrite(lMotorOne, HIGH);
+  digitalWrite(lMotorTwo, HIGH);
 }
 
