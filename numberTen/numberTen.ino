@@ -43,16 +43,15 @@ void setup() {
 
 void loop() {
   //Serial.println(potentiometerRead);
-  Direction();
-  if (ping() < 10 && potentiometerRead > 0) {
-    Stop();
-  }
-  else {
+  //Direction();
+  int dist = ping();
+  if (dist < 10) potentiometerRead = -255;
+  else if (dist > 15) potentiometerRead = 255;
+  else potentiometerRead = 0;
     gas();
     forward(poLeft, poRight); 
     steer();
     prints();
-  }
 }
 
 void Direction() {
