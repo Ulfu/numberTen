@@ -76,16 +76,16 @@ void gas() {  //
     Speed = -Speed;//Make speed a positive value
   }
   
-  if (turnPercent <= 0) { //Adjusts the speed of the left 
+  if (turnPercent <= 0) { //Adjusts the speed of the right motor. Set full speed to the left motor
     leftSpeed = Speed;
-    rightSpeed = Speed * abs(turnPercent + 50) / 100;
+    rightSpeed = Speed * abs(turnPercent + 50) / 100; //By using abs() the motor will stand still when turnPercent equals -50
   }
-  if (turnPercent > 0) {
+  if (turnPercent > 0) {  //Adjusts the speed of the left motor. Set full speed to the right motor
     rightSpeed = Speed;
     leftSpeed = Speed * abs(turnPercent - 50) / 100;  
   }
   
-  Serial.print(leftSpeed);
+  Serial.print(leftSpeed);  //Print values
   Serial.print("left Speed\t");
   Serial.print(rightSpeed);
   Serial.print("right Speed\t");
@@ -93,23 +93,23 @@ void gas() {  //
   analogWrite(enablePinRight, rightSpeed);
 }
 
-void steer() {
+void steer() {  //Read the value of steering potentiometer
   //Serial.println(turnPercent);
   
   turnPercent = analogRead(steeringWheelPin);
-  turnPercent = map(turnPercent, 0, 1023, -100, 100);
+  turnPercent = map(turnPercent, 0, 1023, -100, 100); //-100 and 100 is used as a percentage when divided by 100
 }
 
-void forward(boolean left, boolean right) {
-  //Set the H-bridge in direction forward
-  digitalWrite(rMotorOne, !left);
-  digitalWrite(rMotorTwo, left);
+void forward(boolean left, boolean right) { 
+  //Set the H-bridge in direction
+  digitalWrite(rMotorOne, !left); //set the negated value for voltage difference
+  digitalWrite(rMotorTwo, left);  //The direction is now set for left motor
 
   digitalWrite(lMotorOne, !right);
-  digitalWrite(lMotorTwo, right);
+  digitalWrite(lMotorTwo, right); //The direction is now set for right motor
 }
 
-void prints(){
+void prints(){//This function is for debugging. Prints values to serial
   Serial.print(gasRead);
   Serial.print("gas\t");
   Serial.print(turnPercent);
@@ -125,25 +125,25 @@ void prints(){
   
 }
 
-long ping() {
-  digitalWrite(trigPin, LOW);
+long ping() {//This function sends out a ultrasonic pulse and returns the distance to nearest object
+  digitalWrite(trigPin, LOW);//Make a clean pulse
   delayMicroseconds(2);
 
-  digitalWrite(trigPin, HIGH);
+  digitalWrite(trigPin, HIGH);//Send out the pulse
   delayMicroseconds(5);
-  digitalWrite(trigPin, LOW);
+  digitalWrite(trigPin, LOW);//stop the pulse
 
-  long microSeconds = pulseIn(echoPin, HIGH);
+  long microSeconds = pulseIn(echoPin, HIGH); //Get the distance measurd in time
   
-  long cm = microSecondsTocm(microSeconds);
+  long cm = microSecondsTocm(microSeconds); //Convert the time it took into cm
   return cm;
   }
   
 long microSecondsTocm(long microseconds) {
-  return microseconds / 29 / 2;
+  return microseconds / 29 / 2; //1/29 is the pace and divide by two because the soundwave traveld back and forth.
 }
 
-void Stop() {
+void Stop() {//Make the vehichle stand still by locking the motors
   digitalWrite(rMotorOne, HIGH);
   digitalWrite(rMotorTwo, HIGH);
 
